@@ -1,0 +1,288 @@
+{%- comment -%}
+Those are the option names for which we automatically detect swatch. For the color, we use them to display a swatch, while
+for size, we use it to display a size chart (if applicable)
+{%- endcomment -%}
+
+{%- assign color_label = 'color,colour,couleur,colore,farbe,색,色,färg,farve' | split: ',' -%}
+{%- assign size_label = 'size,taille,größe,tamanho,tamaño,koko,サイズ' | split: ',' -%}
+
+{%- assign size_chart_page = '' -%}
+{%- assign product_popovers = '' -%}
+{%- assign show_option_label = false -%}
+
+{%- assign selected_variant = product.selected_or_first_available_variant -%}
+
+{%- form 'product', product, class: 'ProductForm' -%}
+  <div class="ProductForm__Variants">
+    {%- unless product.has_only_default_variant -%}
+      {%- for option in product.options_with_values -%}
+        {%- assign downcase_option = option.name | downcase -%}
+        {%- capture popover_id -%}popover-{{ product.id }}-{{ section.id }}-{{ option.name | handle }}{%- endcapture -%}
+        {% if downcase_option contains 'size' %}
+        {%- assign size_chart_page = pages['size-chart'] -%}
+        {%- if product.tags.size >0 -%}
+  			 {% for tag in product.tags %}
+				{% if tag contains 'chart' %}
+					{%- assign chart_num_page = tag -%}
+			  	{% endif %}
+			  {% endfor %}
+  		  {%- endif -%}
+        {%- assign size_chart_page = pages[chart_num_page] -%}
+        {% endif %}
+        {%- if section.settings.selector_mode == 'block' or color_label contains downcase_option and section.settings.show_color_swatch -%}
+          {%- assign show_option_label = true -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- for option in product.options_with_values -%}
+        {%- assign downcase_option = option.name | downcase -%}
+        {%- capture popover_id -%}popover-{{ product.id }}-{{ section.id }}-{{ option.name | handle }}{%- endcapture -%}
+        
+    {%- if show_option_label == false and size_label contains downcase_option and size_chart_page != empty -%}
+                      <button type="button" class="Popover__FooterHelp Heading Link Link--primary Text--subdued u-h6" data-action="open-modal" aria-controls="modal-{{ size_chart_page.handle }}">
+                        {{- 'product.form.size_chart' | t -}}
+                      </button>
+                    {%- endif -%}
+                    
+        <div class="options-wrapper {% if show_option_label == false and size_label contains downcase_option and size_chart_page != empty %} decrease-margins{% endif %}">
+          <select name="option{{ forloop.index }}" class="single-product-options">
+            {% for value in option.values %}
+              <option value="{{ value }}" {% if option.selected_value == value %} selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+          </select>
+         
+           <div class="swatch-eleemnts {{ option.name | handleize }}">
+            {%- assign optionindex = 'option' | append: forloop.index -%}
+            {% for value in option.values %}
+
+            {% for variant in product.variants %}
+              {% if variant[optionindex] == value %}
+              <div class="swatch-element {{ option.name | handleize }}" data-value="{{ value  }}">
+                <input type="radio" name="option-{{ product.id }}-{{ option.name | handleize }}" id="product-option-{{ product.id}}-{{ value | handleize }}" value="{{ value  }}"  {% unless variant.available  %} disabled="disable"  {% endunless%}>
+                <label for="product-option-{{ product.id}}-{{ value | handleize }}">{{ value  }}</label>
+              </div>
+              {% break %}
+              {% endif %}
+            {% endfor %}
+            {% endfor %}
+          </div>
+        </div>
+      {%- endfor -%}
+       <div class="qty-left" style="display:none;">Only <span id="pdp-qty-left">{{ product.selected_or_first_available_variant.inventory_quantity }}</span> Left, Order Now</div>
+      <div class="no-js ProductForm__Option">
+        <div class="Select Select--primary">
+          {%- render 'icon' with 'select-arrow' -%}
+
+          <select id="product-select-{{ product.id }}" name="id" title="Variant">
+            {%- for variant in product.variants -%}
+              <option {% if variant == selected_variant %}selected="selected"{% endif %} {% unless variant.available %}disabled="disabled"{% endunless %} value="{{ variant.id }}" data-sku="{{ variant.sku }}">{{ variant.title }} - {{ variant.price | money }}</option>
+            {%- endfor -%}
+          </select>
+        </div>
+      </div>
+    {%- else -%}
+      <input type="hidden" name="id" data-sku="{{ selected_variant.sku }}" value="{{ selected_variant.id }}">
+    {%- endunless -%}
+
+
+    {%- if section.settings.show_quantity_selector -%}
+      {%- if show_option_label -%}
+        <span class="ProductForm__Label">{{ 'product.form.quantity' | t }}:</span>
+      {%- endif -%}
+
+      <div class="ProductForm__QuantitySelector">
+        <div class="QuantitySelector QuantitySelector--large">
+          {%- assign quantity_minus_one = line_item.quantity | minus: 1 -%}
+
+          <span class="QuantitySelector__Button Link Link--secondary" data-action="decrease-quantity">{% render 'icon' with 'minus' %}</span>
+          <input type="text" class="QuantitySelector__CurrentQuantity" pattern="[0-9]*" name="quantity" value="1" aria-label="{{ 'product.form.quantity' | t }}">
+          <span class="QuantitySelector__Button Link Link--secondary" data-action="increase-quantity">{% render 'icon' with 'plus' %}</span>
+        </div>
+      </div>
+    {%- else -%}
+      <input type="hidden" name="quantity" value="1">
+    {%- endif -%}
+
+    {%- if section.settings.show_inventory_quantity -%}
+      {%- assign hide_inventory_quantity_by_default = false -%}
+      
+      {%- if selected_variant.inventory_management == blank or selected_variant.inventory_quantity <= 0 -%}
+        {%- assign hide_inventory_quantity_by_default = true -%}
+      {%- endif -%}
+
+      {%- if section.settings.inventory_quantity_threshold != 0 and selected_variant.inventory_quantity > section.settings.inventory_quantity_threshold -%}
+        {%- assign hide_inventory_quantity_by_default = true -%}
+      {%- endif -%}
+
+      <p class="ProductForm__Inventory Text--subdued" {% if hide_inventory_quantity_by_default %}style="display: none"{% endif %}>
+        {%- if section.settings.inventory_quantity_threshold == 0 -%}
+          {{- 'product.form.inventory_quantity_count' | t: count: selected_variant.inventory_quantity -}}
+        {%- else -%}
+          {{- 'product.form.low_inventory_quantity_count' | t: count: selected_variant.inventory_quantity -}}
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+  </div>
+
+  {%- comment -%}
+  --------------------------------------------------------------------------------------------------------------------
+  ADD TO CART BUTTON
+  --------------------------------------------------------------------------------------------------------------------
+  {%- endcomment -%}
+
+
+  {%- if section.settings.show_payment_button == false or product.selling_plan_groups.size > 0 -%}
+    {%- assign use_primary_button = true -%}
+  {%- else -%}
+    {%- assign use_primary_button = false -%}
+  {%- endif -%}
+  <select id="product-vaiant-selector" class="hide js product-variant-selector" name="id">
+    {% for variant in product.variants %}
+      <option data-inv="{{ variant.inventory_quantity }}" value="{{ variant.id }}">{{ variant.title }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" data-use-primary-button="{% if use_primary_button %}true{% else %}false{% endif %}" class="ProductForm__AddToCart Button {% if selected_variant.available and use_primary_button %}Button--primary{% else %}Button--secondary{% endif %} Button--full" {% if selected_variant.available %}data-action="add-to-cart"{% else %}disabled="disabled"{% endif %}>
+    {%- if selected_variant.available -%}
+      <span>{% if product.template_suffix == 'pre-order' %}{{ 'product.form.pre_order' | t }}{% else %}{{ 'product.form.add_to_cart' | t }}{% endif %}</span>
+
+      {%- if section.settings.show_price_in_button -%}
+        <span class="Button__SeparatorDot"></span>
+        <span>{{ selected_variant.price | money_without_trailing_zeros }}</span>
+      {%- endif -%}
+    {%- else -%}
+      {{- 'product.form.sold_out' | t -}}
+    {%- endif -%}
+  </button>
+  {%- if section.settings.show_payment_button and product.template_suffix != 'pre-order' -%}
+    {{ form | payment_button }}
+  {%- endif -%}
+
+  {%- comment -%}The availability container will be added automatically if there is store pickup available{%- endcomment -%}
+  {%- if section.settings.show_pickup_availability -%}
+    <div class="ProductMeta__StoreAvailabilityContainer"></div>
+  {%- endif -%}
+{%- endform -%}
+
+{%- if size_chart_page != empty -%}
+  {%- comment -%}If we have a size chart we capture the modal content (it must be displayed outside the form for proper positioning){%- endcomment -%}
+
+  {%- capture product_modals -%}
+    <div id="modal-{{ size_chart_page.handle }}" class="Modal Modal--dark Modal--fullScreen Modal--pageContent" aria-hidden="true" role="dialog" data-scrollable>
+      <header class="Modal__Header">
+        <h2 class="Modal__Title Heading u-h1">{%comment%}{{ size_chart_page.title }}{%endcomment%}</h2>
+      </header>
+
+      <div class="Modal__Content Rte">
+        <div class="Container Container--extraNarrow">
+          {{- size_chart_page.content -}}
+        </div>
+      </div>
+
+      <button class="Modal__Close RoundButton RoundButton--large" data-animate-bottom data-action="close-modal">{% render 'icon' with 'close' %}</button>
+    </div>
+  {%- endcapture -%}
+{%- endif -%}
+
+{%- if section.settings.show_payment_button and selected_variant.available == false -%}
+  <style>
+    #shopify-section-{{ section.id }} .shopify-payment-button {
+      display: none;
+    }
+  </style>
+{%- endif -%}
+
+{%- comment -%}
+--------------------------------------------------------------------------------------------------------------------
+OFF SCREEN ELEMENTS
+
+Implementation note: in the past (with "include") we could accumulate the data and output it outside the snippet
+itself. However with the new "render" tag, everything that is captured inside cannot be used outside the snippet
+itself. As a consequence we are moving them in JavaScript. This allows to make sure that those elements are upper
+in the DOM tree, and do not show below the content
+--------------------------------------------------------------------------------------------------------------------
+{%- endcomment -%}
+
+<div class="Product__OffScreen">
+  {{- product_popovers -}}
+  {{- product_modals -}}
+</div>
+
+{% comment %}
+------------------------------------------------------------------------------
+Product Data. This must be outputted for all products (including home page).
+
+IMPORTANT: THIS CODE IS VITAL. DO NOT EDIT IT NOT REMOVE IT. MAKE SURE TO KEEP
+THE EXACT SAME ATTRIBUTES.
+------------------------------------------------------------------------------
+{% endcomment %}
+
+<script type="application/json" data-product-json>
+  {
+    "product": {{ product | json }},
+    "selected_variant_id": {{ selected_variant.id }}
+    {%- if section.settings.show_inventory_quantity -%}
+      ,"inventories": {
+        {%- for variant in product.variants -%}
+          {%- assign inventory_message = '' -%}
+
+          {%- if section.settings.inventory_quantity_threshold == 0 -%}
+            {%- capture inventory_message -%}{{- 'product.form.inventory_quantity_count' | t: count: variant.inventory_quantity -}}{%- endcapture -%}
+          {%- else -%}
+            {%- capture inventory_message -%}{{- 'product.form.low_inventory_quantity_count' | t: count: variant.inventory_quantity -}}{%- endcapture -%}
+          {%- endif -%}
+
+          "{{ variant.id }}": {
+            "inventory_management": {{ variant.inventory_management | json }},
+            "inventory_policy": {{ variant.inventory_policy | json }},
+            "inventory_quantity": {{ variant.inventory_quantity | json }},
+            "inventory_message": {{ inventory_message | json }}
+          }{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      }
+    {%- endif -%}
+  }
+</script>
+<script id="product-details" type="application/json">
+{{ product | json }}
+</script>
+<script>
+  $(document).ready(function(){
+    $('.swatch-element label').click(function(){
+      var selected_val = $(this).prev().val();
+      $(this).closest('.options-wrapper').find('.single-product-options').val(selected_val).trigger('change');
+    })
+    $('.single-product-options').on('change',function(){
+      var options_array = [];
+      $('.single-product-options').each(function(i,v){
+        options_array.push($(this).val());
+      })
+      var prodJson = JSON.parse($('#product-details').html());
+      var selected_vaariant  = prodJson.variants.filter(function(v,i){
+        return v.option1 == options_array[0] && v.option2 == options_array[1] && v.option3 == options_array[2];
+      })
+      $('#product-vaiant-selector').val(selected_vaariant[0].id).trigger('change');
+      if(selected_vaariant.length > 0) {
+        if(selected_vaariant[0].available == true) {
+          $('.ProductForm__AddToCart').removeAttr('disabled').text('Add to Cart').show();
+          $('.swym-wishlist-button-bar').hide().removeClass('swym-bbar-nomargin').find('button').hide();
+        } else {
+          $('.ProductForm__AddToCart').attr('disabled',true).text('Sold Out').hide();
+          $('.swym-wishlist-button-bar').show().removeClass('swym-bbar-nomargin').find('button').show();
+        }
+      } else {
+        $('.ProductForm__AddToCart').attr('disabled',true).text('Not Available').hide();
+        $('.swym-wishlist-button-bar').show().removeClass('swym-bbar-nomargin').find('button').show();
+      }
+
+    })
+    $('#product-vaiant-selector').change(function(){
+      if($(this).find('option:selected').data('inv') < 6 && $(this).find('option:selected').data('inv') > 0)  {
+        $('.qty-left').show()
+        $('#pdp-qty-left').text($(this).find('option:selected').data('inv'));
+      } else {
+        $('.qty-left').hide()
+      }
+    })
+  })
+</script>
+
+

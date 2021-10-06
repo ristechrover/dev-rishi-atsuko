@@ -1,0 +1,116 @@
+<script>function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
+
+  function _iterableToArray(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
+        arr2[i] = arr[i];
+      }
+      return arr2;
+    }
+  }
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+    return _arr;
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  var shopifyCollectionCount = Number(document.getElementById('isp_search_result_page').dataset.shopifyCollectionCount);
+
+  var refineListener = false;
+
+  var __isp_options = __isp_options || {};
+
+  var firstTimeRun = true;
+
+
+  __isp_options.isp_serp_callback = function (data, facets_only) {
+    // console.log(data);
+    var facetsContainer = document.querySelector('.isp_search_res_facets_container');
+    var filterContainer = document.querySelector('.isp_left_container');
+
+    var isp_container = document.querySelector('#isp_search_results_container');
+    isp_container.classList.add('product-recommendations', 'row');
+
+    if (data.total_results == 0) {
+      document.getElementById('isp_refine_nevigation').remove();
+      let resultsName = document.getElementById('isp_results_search_text');
+      resultsName.innerText = `No results for "${resultsName.innerText}" but look at these`
+    }
+    
+ 
+
+    // Change result text and Sort by Toggle
+    var resultText = document.getElementById('isp_header_subtitle');
+    resultText.innerText = resultText.innerText.replace('RESULTS', 'ITEMS');
+    var sortBy = document.getElementById('search_res_sorting_title');
+    var sortContainer = document.getElementById('isp_sorting_drop_container');
+
+    if (refineListener == false) {
+      var filterContainer = document.querySelector('.isp_left_container');
+      var refineButton = document.querySelector('#isp_refine_button');
+
+    
+
+      filterContainer.insertAdjacentHTML('beforeend', "<button class=\"button button--clear button--filters button--filters__clear-items\">Clear All</button><button class=\"button button--puke button--filters button--filters__view-items\">View Items</button>");
+      document.querySelector('.button--filters__view-items').addEventListener('click', function () {
+        filterContainer.classList.remove('visible-container');
+      });
+
+      if (document.querySelector('.button--filters__clear-items')) {
+        document.querySelector('.button--filters__clear-items').addEventListener('click', function () {
+          document.querySelector('[facet_id="isp_clear_all_facets"]').click();
+          document.querySelector('.no--filters').remove();
+        });
+      }
+
+      sortBy.addEventListener('click', function () {
+        sortBy.classList.toggle('sort-me');
+        sortContainer.click();
+        sortContainer.style.display = "inline-block";
+      });
+      refineListener = true;
+    }
+  };</script>

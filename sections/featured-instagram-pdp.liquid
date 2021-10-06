@@ -1,0 +1,113 @@
+<style type="text/css">
+.instagram-list__header {
+  text-align: center;
+  letter-spacing:.2em;
+  text-transform: uppercase;
+  font-size: 16px;
+  font-family: var(--heading-font-family);
+  font-weight: var(--heading-font-weight);
+  font-style: var(--heading-font-style);
+  color: grey;
+  margin-top: 30px;
+}
+.instagram-bar {
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 50px;
+}
+.instagram-bar__item {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 20%;
+  margin: 0 20px 20px;
+}
+  @media only screen and (max-width: 600px) {
+  .instagram-bar__item {
+  max-width: 80%;
+}
+  }
+.instagram-bar__image {
+  display: block;
+  margin: 0 auto;
+}
+.instagram-bar__link {
+  display: block;
+  text-decoration: none;
+}
+  @media only screen and (max-width: 600px) {
+    img.lazyload.hs-lazyload.hs-id-fd9bf61a {
+   max-width: 100%;
+    }
+</style>
+<div class="instagram-list">
+  {%- if section.settings.title != blank -%}
+    <div class="instagram-list__header">
+      <h2>{{ section.settings.title | escape }}</h2>
+    </div>
+  {%- endif -%}
+  {%- if section.blocks.size > 0 -%}
+    <div class="instagram-bar pdpd-insta-scroll">
+      {%- for block in section.blocks -%}
+        <div class="instagram-bar__item" {{ block.shopify_attributes }}>
+          {%- if block.settings.link != blank -%}
+            <a href="{{ block.settings.link }}" class="instagram-bar__link">
+          {%- endif -%}
+          {%- if block.settings.image != blank -%}
+            {% assign hs_data_src = block.settings.image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' %}<img class="lazyload hs-lazyload hs-id-fd9bf61a" data-sizes="auto" data-src="{{ hs_data_src }}" data-widths="[50,90,180,360,480,720,900,1080,1296,1512]" src="{{ block.settings.image | img_url: '1080x1080', scale: 2 }}"/>
+          {%- else -%}
+            {{ 'instagram' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+          {%- if block.settings.link != blank -%}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</div>
+<script>
+  $(document).ready(function(){
+    $('.pdpd-insta-scroll').slick({
+      slidesToShow:2.25,
+      arrows:false
+    });
+  })
+</script>
+{% schema %}
+  {
+    "name": "Featured Instagram",
+    "class": "index-section",
+    "max_blocks": 4,
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Keep update from [ShopifyExplorer]"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Instagram list"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "instagram_image",
+        "name": "Instagram",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "url",
+            "id": "link",
+            "label": "Link",
+            "info": "Optional"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

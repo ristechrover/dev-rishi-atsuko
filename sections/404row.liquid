@@ -1,0 +1,77 @@
+<div class="Container">
+
+  <div class="rrow">
+    <div class="rtitle"><h2>{{section.settings.rtitle}}</h2></div>
+
+    <div  class="ritems">
+      {% assign collection = section.settings.rcollection %}
+      {% for product in collections[collection].products %}
+      	{%- render 'product-item', product: product, show_product_info: true, show_vendor: false, show_color_swatch: false, show_labels: true -%}
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<style>
+  .rrow{
+  	margin-bottom: 35px;
+  }
+  .rtitle{
+  	font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    font-family: Montserrat, sans-serif;
+    letter-spacing: 2.4px;
+  }
+  .ritems{
+  	display:flex;
+    margin-top:25px;
+flex-wrap:wrap;
+  }
+  .ritems .ProductItem{
+  	width: 33.33%;
+  }
+@media(max-width: 999px){
+.ritems .ProductItem{
+  	width: 50%;
+  }
+}
+@media(max-width: 780px){
+.ritems .ProductItem{
+  	width: 50%;
+  }
+  @media(max-width: 480px){
+.ritems .ProductItem{
+  	width: 100%;
+  }
+.ritems{
+flex-wrap:wrap;
+}
+}
+</style>
+
+{% schema %}
+  {
+    "name": "404 row",
+    "settings": [
+      {
+         "type": "text",
+         "id": "rtitle",
+         "default": "Title",
+         "label": "Title"
+      },
+      {
+         "type": "collection",
+         "id": "rcollection",
+         "label": "collection"
+      }
+	]
+  }
+{% endschema %}
+
+{% stylesheet %}
+{% endstylesheet %}
+
+{% javascript %}
+{% endjavascript %}
