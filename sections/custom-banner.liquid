@@ -1,0 +1,104 @@
+{% if section.settings.show_Section  %} 
+{% if collection.metafields.global.collection_image != blank %}
+        <section id="Collection-Banner">
+          {% endif %}
+          
+          {% if collection.metafields.global.collection_image  %}
+          {{ collection.metafields.global.collection_image  }} 
+          {% endif %}
+          
+		   {% if collection.metafields.global.collection_mobile_image  %}
+          	{{ collection.metafields.global.collection_mobile_image }} 
+          {% endif %}
+          
+          
+			<div class="fild_text">
+              {% if collection.metafields.global.collection-title %}
+             	{{ collection.metafields.global.collection-title }}
+              {% endif %}
+              {% if collection.metafields.global.collection_description %}
+              	{{ collection.metafields.global.collection_description }}
+              {% endif %}
+              
+			{{ collection.metafields.global.collection_button_url }}
+          </div>
+		
+         {% if collection.metafields.global.collection_image != blank %}
+        </section>
+         {% endif %}
+{% endif %}
+<style>
+  #Collection-Banner {position: relative;}
+  #Collection-Banner img {width: 100%;}
+  #Collection-Banner .image:after {
+    content: '';
+    height: 100%;
+    width: 100%;
+    background-color: {{section.settings.overlay_color}};
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.6;
+    z-index: 0;
+  }
+  #Collection-Banner .fild_text {
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    color: #fff;
+    font-size: 20px;
+    text-align: center;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+  @media (min-width:640px){
+    section#Collection-Banner figure.image:nth-child(2) {
+        display: none;
+    }
+    section#Collection-Banner figure.image:nth-child(1) {
+        display: block;
+    }
+  }
+  @media (max-width:640px){
+    section#Collection-Banner figure.image:nth-child(2) {
+        display: block;
+    }
+    section#Collection-Banner figure.image:nth-child(1) {
+        display: none;
+    }
+  }
+</style>
+{% schema %}
+{
+  "name": "Custom Banner",
+  "settings": [
+	{
+  
+      "type": "checkbox",
+        
+      "id": "show_Section",
+        
+      "label": "Show Section",
+        
+      "default": true
+      },
+  
+	
+    
+	{
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "category": "Banner",
+      "name": "Custom Banner",
+      "settings": {}
+    }
+  ]
+}
+{% endschema %}

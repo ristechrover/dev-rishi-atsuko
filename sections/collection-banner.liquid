@@ -1,0 +1,112 @@
+ 
+{%- assign hasBanner = false -%}
+{%- assign hasMobile = false -%}
+{% for block in section.blocks %}
+    {% if block.settings.collection == collection.handle and block.settings.desktop != blank %}
+    {%- assign hasBanner = true -%}
+        {{ block.settings.desktop | img_url: '2000x' | img_tag: collection.title , 'collection-banner--desktop' }}
+        {% if block.settings.mobile != blank %}
+        {%- assign hasMobile = true -%}
+            {{ block.settings.mobile | img_url: '1000x' | img_tag: collection.title , 'collection-banner--mobile' }}
+        {% endif %}
+        {% unless block.settings.title == blank %}
+<div class="BannerText">{{ block.settings.title }}</div>
+        {% endunless %}
+        {% break %}
+
+    {% endif %}
+{% endfor %}
+{% if hasBanner %}
+    <style>
+      #Collection-Banner img {
+        width: 100%;
+        position: relative;
+      }
+        .collection-banner {
+            display: block;
+            margin-bottom: 1em;
+            position:relative;
+        }
+        .collection-banner--desktop, .collection-banner--mobile {
+            width:100%;
+        }
+        .collection-banner .BannerText{
+            position:absolute;
+            left:50%;
+            top:50%;
+            transform:translate(-50%,-50%);
+            text-align:center;
+            color: white !important;
+            font-size: 25px;
+            font-family: Montserrat, sans-serif;
+            letter-spacing: .2em;
+            width: 90%;
+        }
+        @media screen and (max-width:767px) {
+            .collection-banner h2.collection-banner-title {
+                font-size:1.5em;
+            }
+        }
+        {% if hasMobile %}
+        @media screen and (max-width:767px) {
+            .collection-banner--mobile{
+                display: block;
+            }
+            .collection-banner--desktop{
+                display:none;
+            }
+        }
+        @media screen and (min-width:768px) {
+            .collection-banner--desktop{
+                display:block;
+            }
+            .collection-banner--mobile{
+                display: none;
+            }
+        }
+        {% else %}
+        .collection-banner--desktop{
+            display:block;
+        }
+        {% endif %}
+    </style>
+{% endif %}
+
+
+{% render 'shogun-products', content: collection %}
+
+{% schema %}
+    {
+        "name": "Collection Banner",
+        "class": "collection-banner",
+        "blocks": [
+            {
+                "name":"Banner",
+                "type":"banner",
+                "settings":[
+                    {
+                      "type": "collection",
+                      "id": "collection",
+                      "label": "Collection"
+                    },
+                    {
+                      "type": "image_picker",
+                      "id": "desktop",
+                      "label": "Desktop"
+                    },
+                    {
+                      "type": "image_picker",
+                      "id": "mobile",
+                      "label": "Mobile"
+                    },
+                    {
+                         "type": "html",
+                         "id": "title",
+                         "label": "Text"
+                    }
+                ]
+            }
+        ],
+  		"templates": ["collection"]
+    }
+{% endschema %}
